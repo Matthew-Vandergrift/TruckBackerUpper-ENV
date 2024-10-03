@@ -1,9 +1,8 @@
-# Basing Dynamics off of TD + TBU paper
-# An application of the temporal difference algorithm to the truck backer-upper problem
+# Basing Dynamics off of Neuro-Genetic Truck Backer Upper paper
 
 import numpy as np
 import random
-
+from math import degrees, radians
 
 class TruckBackerUpper:    
     def __init__(self, trailer_length=14, cab_length=6, x_bounds=[0,200], y_bounds=[-100, 100]):
@@ -15,22 +14,19 @@ class TruckBackerUpper:
 
 
     # Puts the Trailer in a random vertical position and orientation (from TD-paper)
-    def reset_truck(self, phi=0):
-        self.u = np.random.randint(-np.pi/2, np.pi/2)
+    def reset_truck(self):
         # Position Variables
         self.x = 160 
         self.y = np.random.uniform(-10, 10)
         # Angle Variables
         self.theta_t = np.random.uniform(-1.5, 1.5)
         self.theta_c = 0.0
-        if not self.valid:
-            self.reset_truck()
 
-    # The change I'm making from the paper is that u is continous
+
     def step(self, u):
         # Intermediate Variables for computation
         a = 3 * np.cos(u)
-        b = np.cos(self.theta_c)
+        b = a * np.cos(self.theta_c)
         # Updating State Variables
         self.x += -1 * b * np.cos(self.theta_t)
         self.y += -1 * b * np.sin(self.theta_t)
@@ -51,14 +47,14 @@ class TruckBackerUpper:
 
     # Some utility functions
     def is_jackknifed(self):
-        return(self.theta_t >= np.pi/2)
+        return(self.theta_c > np.pi/2)
     # This is the one function, I need to check  
     def valid_location(self):
         return (self.x <= self.x_bounds[1] and self.x >= self.x_bounds[0]) and \
               (self.y >= self.y_bounds[0] and self.y <= self.y_bounds[1])
     # Checking for valid angles
     def valid_angles(self):
-        return self.theta_t < 4*np.pi
+        return self.theta_t <= 4*np.pi
 
 if __name__ == '__main__':
     print("Hello World")
