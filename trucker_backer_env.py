@@ -1,7 +1,7 @@
 # Custom Truck Backer Upper Gymnasium Environment 
 # Description of Truck Backer Upper from : An application of the temporal difference
 # algorithm to the truck backer-upper problem
-# Inspiration of Gynamisum Code from : https://github.com/johnnycode8/gym_custom_env
+# Inspiration of PyGame Code from : https://github.com/johnnycode8/gym_custom_env
 
 import numpy as np
 import gymnasium as gym
@@ -13,10 +13,11 @@ import sys
 # For Declaring Observation and Action Space
 from gymnasium import spaces 
 
-# NYU Code (Can Replace with mine later)
+# My problem code
 import trucker_backer_problem as tbu
 
 # Begin by Registering the Environment 
+
 register(id = 'TBU_v0', entry_point='trucker_backer_env:TruckBackerEnv')
 
 # Environment Class
@@ -38,6 +39,8 @@ class TruckBackerEnv(gym.Env):
             shape=(4,),
             dtype=np.float64
         )
+        # Defining Max Number of Steps 
+        self.step_counter = 0
         # Pygame stuff
         if render_mode == "human":
             self._init_pygame()
@@ -115,6 +118,7 @@ class TruckBackerEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed) 
         self.truck.reset_truck()
+        self.step_counter = 0
         # Observation is simply the four state variables 
         obs = np.array([self.truck.x, self.truck.y, self.truck.theta_c, self.truck.theta_t])
         # Checking for rendering 
@@ -126,6 +130,9 @@ class TruckBackerEnv(gym.Env):
         return obs, info
 
     def step(self, action):
+        # Adding a step to the counter
+        self.step_counter += 1
+
         # Taking the action
         terminated_goal, terminated_fail = self.truck.step(u = action[0]) # Need to ask why this is the case
         
@@ -134,7 +141,6 @@ class TruckBackerEnv(gym.Env):
             reward = -0.1
             terminated = True  
         elif terminated_goal == True:
-            print("AT THE GOAL!!!")
             reward = 10 
             terminated = True
         else:
@@ -154,7 +160,7 @@ class TruckBackerEnv(gym.Env):
             self.render()
 
         # Return observation, reward, terminated, truncated (not used), info
-        return obs, reward, terminated, False, info
+        return obs, reward, terminated, (self.step_counter == 300), info
     
 # For unit testing
 if __name__=="__main__":
