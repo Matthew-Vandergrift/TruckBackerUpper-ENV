@@ -7,14 +7,17 @@ import numpy as np
 import gymnasium as gym
 from gymnasium.envs.registration import register
 from gymnasium.utils.env_checker import check_env
-import pygame 
 import sys
+import pygame
 
 # For Declaring Observation and Action Space
 from gymnasium import spaces 
 
 # My problem code
-import trucker_backer_problem as tbu
+import sys
+sys.path.append('./')
+sys.path.append('../')
+import trucker_backer_problem as tbu_prob
 
 # Begin by Registering the Environment 
 
@@ -29,7 +32,7 @@ class TruckBackerEnv(gym.Env):
     def __init__(self, trailer_length=14, cab_length=6, x_bounds=[0,200], y_bounds=[-100, 100], render_mode = None, fps = 1):
         self.render_mode = render_mode
         # Initalizing the Problem Object
-        self.truck = tbu.TruckBackerUpper(trailer_length, cab_length, x_bounds, y_bounds)
+        self.truck = tbu_prob.TruckBackerUpper(trailer_length, cab_length, x_bounds, y_bounds)
         # Defining Action Space
         self.action_space = spaces.Box(low=-1, high=1)
         # Defining Obseration Space
@@ -43,12 +46,12 @@ class TruckBackerEnv(gym.Env):
         self.step_counter = 0
         # Pygame stuff
         if render_mode == "human":
-            self._init_pygame()
             self.fps = fps
             self.last_action=''
 
 
-    # PYGAME FUNCTION
+
+# PYGAME FUNCTION
     def _init_pygame(self):
         pygame.init() # initialize pygame
         pygame.display.init() # Initialize the display module
@@ -117,10 +120,12 @@ class TruckBackerEnv(gym.Env):
     # GYM FUNCTION 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed) 
-        self.truck.reset_truck()
+        self.truck.reset_truck(self.np_random.uniform(-10 , 10), self.np_random.uniform(-1.5, 1.5))
         self.step_counter = 0
         # Observation is simply the four state variables 
-        obs = np.array([self.truck.x, self.truck.y, self.truck.theta_c, self.truck.theta_t])
+        normed_x = (6*self.truck.x / self.truck.x_bounds[1] - 3)
+        normed_y = (3* self.truck.y / self.truck.y_bounds[1])
+        obs = np.array([normed_x, normed_y, self.truck.theta_c, self.truck.theta_t])
         # Checking for rendering 
         if self.render_mode == "human":
             self.render()
@@ -134,33 +139,27 @@ class TruckBackerEnv(gym.Env):
         self.step_counter += 1
 
         # Taking the action
-        terminated_goal, terminated_fail = self.truck.step(u = action[0]) # Need to ask why this is the case
+        terminated_goal, terminated_fail = self.truck.step(u = action[0].item()) # Need to ask why this is the case
+        terminated = terminated_goal | terminated_fail
+        truncated = (self.step_counter == 300)
         
         # Reward Function based on the paper in header of truck file
-        if terminated_fail == True:
-            reward = -0.1
-            terminated = True  
-        elif terminated_goal == True:
-            reward = 10 
-            terminated = True
+        if terminated_goal == True:
+            reward = 10
         else:
-            terminated = False
-            reward = -0.03 * (self.truck.x**0.6) - 0.002*abs(self.truck.y)**1.2 - 0.1*abs(self.truck.theta_t) + 0.4
+            reward = 0
             
         # State Observation
-        normed_x = (6*self.truck.x / self.truck.x_bounds[1] - 3)
+        normed_x = (6*(self.truck.x / self.truck.x_bounds[1]) - 3)
         normed_y = (3* self.truck.y / self.truck.y_bounds[1])
         obs = np.array([normed_x, normed_y, self.truck.theta_c, self.truck.theta_t])
-
-        # Additional info to return. For debugging or whatever.
-        info = {}
 
         # Checking for Rendering
         if(self.render_mode=='human'):
             self.render()
 
         # Return observation, reward, terminated, truncated (not used), info
-        return obs, reward, terminated, (self.step_counter == 300), info
+        return obs, reward, terminated, truncated, {}
     
 # For unit testing
 if __name__=="__main__":

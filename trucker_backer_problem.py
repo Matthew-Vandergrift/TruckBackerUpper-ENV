@@ -10,16 +10,15 @@ class TruckBackerUpper:
         self.l_c = cab_length
         self.x_bounds = x_bounds
         self.y_bounds = y_bounds
-        self.reset_truck()
 
 
     # Puts the Trailer in a random vertical position and orientation (from TD-paper)
-    def reset_truck(self):
+    def reset_truck(self, y_rand_val, theta_t_rand_val):
         # Position Variables
         self.x = 160 
-        self.y = np.random.uniform(-10, 10)
+        self.y = y_rand_val
         # Angle Variables
-        self.theta_t = np.random.uniform(-1.5, 1.5)
+        self.theta_t = theta_t_rand_val
         self.theta_c = 0.0
 
 
@@ -43,7 +42,7 @@ class TruckBackerUpper:
 
     # Checking if truck has reached the goal (using relaxed goal from the paper)
     def at_goal(self):
-        return (np.sqrt(self.x**2 + self.y**2) <= 3 and self.theta_t <= 0.1)
+        return (np.sqrt(self.x**2 + self.y**2) <= 3.0 and self.theta_t <= 0.1)
 
     # Some utility functions
     def is_jackknifed(self):
