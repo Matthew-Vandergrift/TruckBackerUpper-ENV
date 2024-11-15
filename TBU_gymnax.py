@@ -8,6 +8,7 @@ import jax.numpy as jnp
 from gymnax.environments import environment
 from gymnax.environments import spaces
 from jax import random
+jax.config.update("jax_enable_x64", True)
 #jax.config.update("jax_disable_jit", True)
 
 @struct.dataclass
@@ -137,22 +138,22 @@ class TBU_gymnax(environment.Environment[EnvState, EnvParams]):
 
     def action_space(self, params: Optional[EnvParams] = None) -> spaces.Box:
         """Action space of the environment."""
-        return spaces.Box(-1.0, 1.0, shape=(1,), dtype=jnp.float32)
+        return spaces.Box(-1.0, 1.0, shape=(1,), dtype=jnp.float64)
 
     def observation_space(self, params: EnvParams) -> spaces.Box:
         """Observation space of the environment."""
-        low=jnp.array([-3, -3, -2*jnp.pi, -2*jnp.pi], dtype=jnp.float32)
-        high=jnp.array([3, 3, 2*jnp.pi, 2*jnp.pi], dtype=jnp.float32)
-        return spaces.Box(low, high, shape=(4,), dtype=jnp.float32)
+        low=jnp.array([-3, -3, -2*jnp.pi, -2*jnp.pi], dtype=jnp.float64)
+        high=jnp.array([3, 3, 2*jnp.pi, 2*jnp.pi], dtype=jnp.float64)
+        return spaces.Box(low, high, shape=(4,), dtype=jnp.float64)
 
     def state_space(self, params: EnvParams) -> spaces.Dict:
         """State space of the environment."""
         return spaces.Dict(
             {
-                "x": spaces.Box(params.x_bounds[0], params.x_bounds[1], (), jnp.float32),
-                "y": spaces.Box(params.y_bounds[0], params.y_bounds[1], (), jnp.float32),
-                "theta_t": spaces.Box(-2*jnp.pi, 2*jnp.pi, (), jnp.float32),
-                "theta_c": spaces.Box(-2*jnp.pi, 2*jnp.pi, (), jnp.float32),
+                "x": spaces.Box(params.x_bounds[0], params.x_bounds[1], (), jnp.float64),
+                "y": spaces.Box(params.y_bounds[0], params.y_bounds[1], (), jnp.float64),
+                "theta_t": spaces.Box(-2*jnp.pi, 2*jnp.pi, (), jnp.float64),
+                "theta_c": spaces.Box(-2*jnp.pi, 2*jnp.pi, (), jnp.float64),
                 "time": spaces.Discrete(params.max_steps_in_episode),
             }
         )
