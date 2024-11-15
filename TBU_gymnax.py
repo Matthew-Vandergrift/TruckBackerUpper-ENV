@@ -105,35 +105,29 @@ class TBU_gymnax(environment.Environment[EnvState, EnvParams]):
         x = jnp.reshape(obs, (-1,))
         return x
 
-    # def is_terminal(self, state: EnvState, params: EnvParams) -> jnp.ndarray:
-    #     """Check whether state is terminal."""
-    #     # Check termination criteria
-    #     at_goal = jnp.logical_and((jnp.sqrt(state.x**2 + state.y**2) <= params.dist_tol), (state.theta_t <= params.angle_tol))
-
-    #     done_angles = jnp.logical_or(
-    #         state.theta_c > jnp.pi/2, 
-    #         state.theta_t > 4*jnp.pi
-    #     )
-
-    #     done_loc_x = jnp.logical_or(
-    #         state.x > params.x_bounds[1], 
-    #         state.x < params.x_bounds[0]
-    #     )
-    #     done_loc_y = jnp.logical_or(
-    #         state.y < params.y_bounds[0],
-    #         state.y > params.y_bounds[1]
-    #     )
-
-    #     # Check number of steps in episode termination condition
-    #     done_steps = state.time >= params.max_steps_in_episode
-    #     done_loc = jnp.logical_or(done_loc_x, done_loc_y)
-    #     done = jnp.logical_or(at_goal, jnp.logical_or(jnp.logical_or(done_loc, done_angles), done_steps))
-    #     return jnp.array(done)
-
     def is_terminal(self, state: EnvState, params: EnvParams) -> jnp.ndarray:
         """Check whether state is terminal."""
+        # Check termination criteria
+        at_goal = jnp.logical_and((jnp.sqrt(state.x**2 + state.y**2) <= params.dist_tol), (state.theta_t <= params.angle_tol))
+
+        done_angles = jnp.logical_or(
+            state.theta_c > jnp.pi/2, 
+            state.theta_t > 4*jnp.pi
+        )
+
+        done_loc_x = jnp.logical_or(
+            state.x > params.x_bounds[1], 
+            state.x < params.x_bounds[0]
+        )
+        done_loc_y = jnp.logical_or(
+            state.y < params.y_bounds[0],
+            state.y > params.y_bounds[1]
+        )
+
         # Check number of steps in episode termination condition
-        done = state.time >= params.max_steps_in_episode
+        done_steps = state.time >= params.max_steps_in_episode
+        done_loc = jnp.logical_or(done_loc_x, done_loc_y)
+        done = jnp.logical_or(at_goal, jnp.logical_or(jnp.logical_or(done_loc, done_angles), done_steps))
         return jnp.array(done)
 
     @property
