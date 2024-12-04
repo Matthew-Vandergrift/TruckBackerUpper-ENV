@@ -20,7 +20,7 @@ sys.path.append('../')
 import trucker_backer_problem as tbu_prob
 
 # Begin by Registering the Environment 
-register(id = 'TBU_contact', entry_point='trucker_backer_env:TruckBackerEnv')
+register(id = 'TBU_v0', entry_point='trucker_backer_env:TruckBackerEnv')
 
 # Environment Class
 class TruckBackerEnv(gym.Env):
