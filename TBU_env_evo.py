@@ -1,6 +1,5 @@
 # Custom Truck Backer Upper Gymnasium Environment 
-# Description of Truck Backer Upper from : An application of the temporal difference
-# algorithm to the truck backer-upper problem
+# Description of Truck Backer Upper from : Neuro-Genetic Truck Backer-Upper Controller
 # Inspiration of PyGame Code from : https://github.com/johnnycode8/gym_custom_env
 
 import numpy as np
@@ -17,10 +16,10 @@ from gymnasium import spaces
 import sys
 sys.path.append('./')
 sys.path.append('../')
-import trucker_backer_problem as tbu_prob
+import trucker_backer_problem_evo as tbu_prob
 
 # Begin by Registering the Environment 
-register(id = 'TBU_contact', entry_point='trucker_backer_env:TruckBackerEnv')
+register(id = 'TBU_evo', entry_point='TBU_env_evo:TruckBackerEnv')
 
 # Environment Class
 class TruckBackerEnv(gym.Env):
@@ -36,12 +35,14 @@ class TruckBackerEnv(gym.Env):
         self.action_space = spaces.Box(low=-1, high=1)
         # Defining Obseration Space
         self.observation_space = spaces.Box(
-            low=np.array([self.truck.x_bounds[0], self.truck.y_bounds[0], -2*np.pi, -2*np.pi]),
-            high=np.array([self.truck.x_bounds[1], self.truck.y_bounds[1], 2*np.pi, 2*np.pi]),
+            low=np.array([self.truck.x_bounds[0], self.truck.y_bounds[0], -70.0, -70.0]),
+            high=np.array([self.truck.x_bounds[1], self.truck.y_bounds[1], 70.0, 70.0]),
             shape=(4,),
             dtype=np.float64
         )
-        # Defining Max Number of Steps 
+        # Defining Possible Positions
+        self.possible_xys = [np.array([100,0]), np.array([80,50]), np.array([80,-50])]
+        # Defining Max Number of Steps Counter
         self.step_counter = 0
         # Pygame stuff
         if render_mode == "human":
@@ -113,12 +114,12 @@ class TruckBackerEnv(gym.Env):
     # GYM FUNCTION 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed) 
-        self.truck.reset_truck(self.np_random.uniform(-10 , 10), self.np_random.uniform(-1.5, 1.5))
+        position = np.random.randint(0, len(self.possible_xys))
+        angle = np.random.choice(np.array([-90, -30, 0, 30, 90]))
+        self.truck.reset_truck(x_val=self.possible_xys[position][0], y_val=self.possible_xys[position][1], angle=angle)
         self.step_counter = 0
         # Observation is simply the four state variables 
-        normed_x = (6*self.truck.x / self.truck.x_bounds[1] - 3)
-        normed_y = (3* self.truck.y / self.truck.y_bounds[1])
-        obs = np.array([normed_x, normed_y, self.truck.theta_c, self.truck.theta_t])
+        obs = np.array([self.truck.x, self.truck.y, self.truck.theta_c, self.truck.theta_t])
         # Checking for rendering 
         if self.render_mode == "human":
             self.render()
@@ -143,9 +144,7 @@ class TruckBackerEnv(gym.Env):
             reward = 0
             
         # State Observation
-        normed_x = (6*(self.truck.x / self.truck.x_bounds[1]) - 3)
-        normed_y = (3* self.truck.y / self.truck.y_bounds[1])
-        obs = np.array([normed_x, normed_y, self.truck.theta_c, self.truck.theta_t])
+        obs = np.array([self.truck.x, self.truck.y, self.truck.theta_c, self.truck.theta_t])
 
         # Checking for Rendering
         if(self.render_mode=='human'):
@@ -156,7 +155,7 @@ class TruckBackerEnv(gym.Env):
     
 # For unit testing
 if __name__=="__main__":
-    env = gym.make('TBU_v0', render_mode=None)
+    env = gym.make('TBU_evo', render_mode=None)
 
     # Reset environment
     obs, info = env.reset()
