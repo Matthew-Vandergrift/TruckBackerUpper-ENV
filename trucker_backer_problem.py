@@ -42,7 +42,7 @@ class TruckBackerUpper:
 
     # Checking if truck has reached the goal (using relaxed goal from the paper)
     def at_goal(self):
-        return (np.sqrt(self.x**2 + self.y**2) <= 3.0 and self.theta_t <= 0.1)
+        return (np.sqrt(self.x**2 + self.y**2) <= 3.0 and np.abs(self.theta_t) <= 0.1)
 
     # Some utility functions
     def is_jackknifed(self):
