@@ -64,7 +64,7 @@ class TBU_gymnax(environment.Environment[EnvState, EnvParams]):
         theta_c_new = state.theta_c + jnp.arcsin(3.0 * jnp.sin(action) / (params.l_c + params.l_t))
  
         # Important: Reward is based on termination is previous step transition
-        at_goal = jnp.logical_and((jnp.sqrt(x_new**2 + y_new**2) <= params.dist_tol), ((theta_t_new) <= params.angle_tol))
+        at_goal = jnp.logical_and((jnp.sqrt(x_new**2 + y_new**2) <= params.dist_tol), (jnp.abs(theta_t_new) <= params.angle_tol))
         reward = jax.lax.cond(at_goal.squeeze(), lambda p : 10, lambda p : 0, 5)
         #reward = reward.squeeze()
 
@@ -109,7 +109,7 @@ class TBU_gymnax(environment.Environment[EnvState, EnvParams]):
     def is_terminal(self, state: EnvState, params: EnvParams) -> jnp.ndarray:
         """Check whether state is terminal."""
         # Check termination criteria
-        at_goal = jnp.logical_and((jnp.sqrt(state.x**2 + state.y**2) <= params.dist_tol), (state.theta_t <= params.angle_tol))
+        at_goal = jnp.logical_and((jnp.sqrt(state.x**2 + state.y**2) <= params.dist_tol), (jnp.abs(state.theta_t) <= params.angle_tol))
 
         done_angles = jnp.logical_or(
             state.theta_c > jnp.pi/2, 
